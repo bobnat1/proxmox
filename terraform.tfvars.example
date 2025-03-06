@@ -1,0 +1,7 @@
+# terraform.tfvars.example (DO NOT COMMIT terraform.tfvars)
+proxmox_endpoint = "endpoint_address"
+proxmox_username = "username"
+proxmox_password = "password"
+
+instance_username = "username"
+instance_password = "password"

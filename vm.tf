@@ -37,31 +37,59 @@ resource "proxmox_virtual_environment_vm" "debian_gitea" {
   }
 }
 
-# resource "random_password" "ubuntu_vm_password" {
-#   length           = 16
-#   override_special = "_%@"
-#   special          = true
-# }
+resource "proxmox_virtual_environment_vm" "torrent_debian" {
+  name        = "Debian-Torrent"
+  description = "Managed by Terraform"
+  tags        = ["terraform", "debian", "torrent", "vm"]
 
-# resource "tls_private_key" "ubuntu_vm_key" {
-#   algorithm = "RSA"
-#   rsa_bits  = 2048
-# }
+  node_name     = "pve3"
+  vm_id         = 210
+  scsi_hardware = "virtio-scsi-single"
+  agent {
+    enabled = false
+    type    = "virtio"
+  }
 
-# output "ubuntu_vm_password" {
-#   value     = random_password.ubuntu_vm_password.result
-#   sensitive = true
-# }
+  stop_on_destroy = true
 
-# output "ubuntu_vm_private_key" {
-#   value     = tls_private_key.ubuntu_vm_key.private_key_pem
-#   sensitive = true
-# }
+  cpu {
+    cores   = 2
+    sockets = 1
+    type    = "x86-64-v2-AES"
+  }
 
-# output "ubuntu_vm_public_key" {
-#   value = tls_private_key.ubuntu_vm_key.public_key_openssh
-# }
+  memory {
+    dedicated = 2048
+  }
 
+  network_device {
+    bridge      = "vmbr0"
+    mac_address = "46:FB:F2:BC:20:14"
+    model       = "virtio"
+    firewall    = true
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
+  serial_device {
+    device = "socket"
+  }
+
+  disk {
+    datastore_id = "local"
+    interface    = "scsi0"
+    size         = 64
+  }
+  cdrom {
+    file_id = proxmox_virtual_environment_download_file.debian_13.id
+    enabled = false
+  }
+  lifecycle {
+    ignore_changes = [cdrom]
+  }
+}
 
 resource "proxmox_virtual_environment_vm" "truenas_nas" {
   name        = "TreuNAS-NAS"
@@ -143,26 +171,6 @@ resource "tls_private_key" "truenas_vm_key" {
   algorithm = "RSA"
   rsa_bits  = 2048
 }
-
-# resource "random_password" "ubuntu_vm_password" {
-#   length           = 16
-#   override_special = "_%@"
-#   special          = true
-# }
-
-# output "ubuntu_vm_password" {
-#   value     = random_password.ubuntu_vm_password.result
-#   sensitive = true
-# }
-
-# output "ubuntu_vm_private_key" {
-#   value     = tls_private_key.ubuntu_vm_key.private_key_pem
-#   sensitive = true
-# }
-
-# output "ubuntu_vm_public_key" {
-#   value = tls_private_key.ubuntu_vm_key.public_key_openssh
-# }
 
 # Missing VMs to import
 resource "proxmox_virtual_environment_vm" "debian_template" {
@@ -442,6 +450,7 @@ resource "proxmox_virtual_environment_vm" "elive_syncthing" {
   memory {
     dedicated = 2048
   }
+
 
   operating_system {
     type = "l26"
